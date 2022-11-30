@@ -3,15 +3,15 @@ require('dotenv').config();
 
 const variablesEntorno=process.env;
 
-const getProfesiones= async (req, res) => {
+const getAllPerfil= async (req, res) => {
     try {
         let desde = req.query.desde;
         desde = Number(desde);
         let consulta='';
         if (req.query.desde) {
-            consulta=`select * from profesion order by nombre_prof ASC  LIMIT ${ variablesEntorno.ROWS_X_PAGE } OFFSET ${ desde }`;
+            consulta=`select * from perfil order by nombre_perfil ASC  LIMIT ${ variablesEntorno.ROWS_X_PAGE } OFFSET ${ desde }`;
         } else {
-            consulta=`select * from profesion order by nombre_prof  ASC`;
+            consulta=`select * from perfil order by nombre_perfil  ASC`;
         }
         const [results,metadata] = await sequelize.query(consulta);
 
@@ -29,30 +29,30 @@ const getProfesiones= async (req, res) => {
     }
 }
 
-const getBsqProfesiones= async (req, res) => {
+const getBsqPerfil= async (req, res) => {
     try {
-      let busqueda = req.params.bsq;
-      const consulta=`select * from profesion  WHERE nombre_prof LIKE '%${busqueda}%'`;
-      const [results,metadata] = await sequelize.query(consulta);
+        let busqueda = req.params.bsq;
+        const consulta=`select * from perfil WHERE nombre_perfil LIKE '%${busqueda}%'`;
+        const [results,metadata] = await sequelize.query(consulta);
 
-      res.status(200).json({
-          status: 'ok',
-          rows: results,
-          count: metadata.rowCount
-      }); 
-      
-  } catch (error) {
-      return res.status(500).json({ 
-          status:'error',
-          message: error.message 
-      });
-  }
+        res.status(200).json({
+            status: 'ok',
+            rows: results,
+            count: metadata.rowCount
+        }); 
+        
+    } catch (error) {
+        return res.status(500).json({ 
+            status:'error',
+            message: error.message 
+        });
+    }
 }
 
-const getProfesion= async (req, res) => {
+const getPerfil= async (req, res) => {
     try {
         const { id } = req.params;
-        const consulta=`select * from profesion p where pk_prof=${id}`;
+        const consulta=`select * from perfil where pk_perfil=${id}`;
         const [results,metadata] = await sequelize.query(consulta);
 
         res.status(200).json({
@@ -69,11 +69,11 @@ const getProfesion= async (req, res) => {
     }
 }
 
-const createProfesion= async (req, res)=>{
+const createPerfil= async (req, res)=>{
     try {
         const body_json  = req.body;
 
-        const consulta=`select * from sp_crud_profesion ('I','${JSON.stringify(body_json)}'::json)`;
+        const consulta=`select * from sp_crud_perfil ('I','${JSON.stringify(body_json)}'::json)`;
         const [results] = await sequelize.query(consulta);
 
         res.status(200).json(results[0].mensaje); 
@@ -86,11 +86,11 @@ const createProfesion= async (req, res)=>{
     }
 }
 
-const updateProfesion= async (req, res)=>{
+const updatePerfil= async (req, res)=>{
     try {
         const body_json  = req.body;
 
-        const consulta=`select * from sp_crud_profesion ('U','${JSON.stringify(body_json)}'::json)`;
+        const consulta=`select * from sp_crud_perfil ('U','${JSON.stringify(body_json)}'::json)`;
         const [results] = await sequelize.query(consulta);
 
         res.status(200).json(results[0].mensaje); 
@@ -103,11 +103,11 @@ const updateProfesion= async (req, res)=>{
     }
 }
 
-const deleteProfesion= async (req, res)=>{
+const deletePerfil= async (req, res)=>{
     try {
         const body_json  = req.body;
 
-        const consulta=`select * from sp_crud_profesion ('D','${JSON.stringify(body_json)}'::json)`;
+        const consulta=`select * from sp_crud_perfil ('D','${JSON.stringify(body_json)}'::json)`;
         const [results] = await sequelize.query(consulta);
 
         res.status(200).json(results[0].mensaje); 
@@ -123,10 +123,10 @@ const deleteProfesion= async (req, res)=>{
 
 
 module.exports={
-    getProfesiones,
-    getProfesion,
-    getBsqProfesiones,
-    createProfesion,
-    updateProfesion,
-    deleteProfesion
+    getAllPerfil,
+    getBsqPerfil,
+    getPerfil,
+    createPerfil,
+    updatePerfil,
+    deletePerfil
 }

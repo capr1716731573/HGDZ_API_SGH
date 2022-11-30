@@ -90,7 +90,6 @@ const getGeografiasXPadre=async(req,res)=>{
         let desde = req.query.desde;
         let consulta='';
         desde = Number(desde);
-        console.log(desde);
         const fk_padre = req.params.fk_padre;
 
         //valido que exista el parametro "desde"
@@ -137,7 +136,7 @@ const getAllXPais= async(req,res) => {
 
 const getGeografias= async (req, res) => {
     try {
-        const consulta=`select * from profesion p order by nombre_prof ASC`;
+        const consulta=`select * from geografia p order by nombre_prof ASC`;
         const [results,metadata] = await sequelize.query(consulta);
 
         res.status(200).json({
