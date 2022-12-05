@@ -1,4 +1,5 @@
 const {sequelize} = require('../config/database');
+const bcryptjs = require('bcryptjs');
 require('dotenv').config();
 
 const variablesEntorno=process.env;
@@ -8,11 +9,13 @@ const getAllUsuario= async (req, res) => {
         let desde = req.query.desde;
         desde = Number(desde);
         let consulta='';
+        //valido que exista el parametro "desde"
         if (req.query.desde) {
-            consulta=`select * from usuario  order by usuario_user  ASC  LIMIT ${ variablesEntorno.ROWS_X_PAGE } OFFSET ${ desde }`;
+            consulta = `SELECT * FROM usuario usu INNER JOIN persona p on usu.pk_person = p.pk_person ORDER BY p.apellidos_person ASC, p.nombres_person ASC LIMIT ${ variablesEntorno.ROWS_X_PAGE } OFFSET ${ desde }`;
         } else {
-            consulta=`select * from usuario  order by usuario_user  ASC`;
+            consulta = `SELECT * FROM usuario usu INNER JOIN persona p on usu.pk_person = p.pk_person ORDER BY p.apellidos_person ASC, p.nombres_person ASC`;
         }
+
         const [results,metadata] = await sequelize.query(consulta);
 
         res.status(200).json({
@@ -32,7 +35,9 @@ const getAllUsuario= async (req, res) => {
 const getBsqUsuario= async (req, res) => {
     try {
         let busqueda = req.params.bsq;
-        const consulta=`select * from usuario WHERE usuario_user LIKE '%${busqueda}%'`;
+        const consulta = `SELECT * FROM usuario usu INNER JOIN persona p on usu.pk_person = p.pk_person 
+            WHERE usu.usuario_user LIKE '%${busqueda}%' OR p.apellidos_person LIKE '%${busqueda}%' OR 
+            p.nombres_person LIKE '%${busqueda}%' OR p.numidentificacion_person LIKE '%${busqueda}%'`;
         const [results,metadata] = await sequelize.query(consulta);
 
         res.status(200).json({
@@ -52,7 +57,7 @@ const getBsqUsuario= async (req, res) => {
 const getUsuario= async (req, res) => {
     try {
         const { id } = req.params;
-        const consulta=`select * from usuario where pk_user=${id}`;
+        const consulta = `SELECT * FROM usuario usu INNER JOIN persona p on usu.pk_person = p.pk_person WHERE pk_user = ${ id }`;
         const [results,metadata] = await sequelize.query(consulta);
 
         res.status(200).json({
@@ -72,7 +77,8 @@ const getUsuario= async (req, res) => {
 const createUsuario= async (req, res)=>{
     try {
         const body_json  = req.body;
-
+        console.log(body_json.password_user);
+        body_json.password_user = bcryptjs.hashSync(body_json.password_user, 10);
         const consulta=`select * from sp_crud_usuario ('I','${JSON.stringify(body_json)}'::json)`;
         const [results] = await sequelize.query(consulta);
 
@@ -90,6 +96,9 @@ const updateUsuario= async (req, res)=>{
     try {
         const body_json  = req.body;
 
+        if (body_json.password_user != body_json.password2) {
+            body_json.password_user = bcryptjs.hashSync(body_json.password_user, 10);
+        }
         const consulta=`select * from sp_crud_usuario ('U','${JSON.stringify(body_json)}'::json)`;
         const [results] = await sequelize.query(consulta);
 

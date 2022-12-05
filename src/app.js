@@ -9,6 +9,8 @@ const nivel_educacion_route = require('./routes/nivel_educacion.route');
 const tipo_identificacion_route = require('./routes/tipo_identificacion.route');
 const usuario_route = require('./routes/usuario.route');
 const perfil_route = require('./routes/perfil.route');
+const items_menu_route = require('./routes/items_menu.route');
+const menu_perfil_route = require('./routes/menu_perfil.route');
 
 
 
@@ -22,12 +24,14 @@ app.use(express.json());
 
 // Routes
 app.use("/api/login", login_route);
+app.use("/api/usuario", usuario_route);
 app.use("/api/profesion", profesion_route);
 app.use("/api/geografia", geografia_route);
 app.use("/api/nivedu", nivel_educacion_route);
 app.use("/api/tipiden", tipo_identificacion_route);
 app.use("/api/perfil", perfil_route);
-app.use("/api/usuario", usuario_route);
+app.use("/api/items_menu", items_menu_route);
+app.use("/api/menu_perfil", menu_perfil_route);
 
 module.exports={
     app
