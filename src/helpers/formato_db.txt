@@ -1,0 +1,92 @@
+--consulta para retornar un registro en json
+(SELECT row_to_json(r) from (
+	select 	
+	--Datos de tabla triaje
+	het.pk_triaje,
+	het.pk_persona,
+	het.pk_establecimiento,
+	het.pk_especialidad,
+	het.pk_direccionamiento,
+	het.pk_signos_vitales,
+	het.pk_usuario,
+	het.fecha,
+	het.hora,
+	het.motivo_atencion,
+	het.tiempo_atencion,
+	het.audit_creacion,
+	het.audit_modificacion,
+
+	--Datos de Persona
+	(SELECT row_to_json(row) FROM (
+		select * from sga_adm_persona sap where het.pk_persona = sap.per_id_pk
+	)row) as datos_persona,
+	
+	--Datos de Establecimeinto
+	(SELECT row_to_json(row) FROM (
+		select sae.ins_id_fk,sae.eta_descripcion, sae.eta_codigo from sga_adm_establecimiento sae where sae.eta_id_pk = het.pk_establecimiento
+	)row) as datos_establecimiento,
+	
+	--Datos de Especialidad
+	(SELECT row_to_json(row) FROM (
+		select espe.esp_descripcion,serv.ser_descripcion nombre_servicio from sga_adm_especialidad espe inner join sga_adm_servicio serv 
+		on espe.ser_id_fk=serv.ser_id_pk  where espe.esp_id_pk = het.pk_especialidad
+	)row) as datos_especialidad,
+	
+	--Datos de Direccionamiento
+	(CASE WHEN ( pk_direccionamiento = 0 and pk_direccionamiento isnull ) THEN null ELSE 
+	
+		(SELECT row_to_json(row) FROM (
+			select sae2.eta_descripcion nombre_direccionamiento, sae2.eta_codigo cod_direccionamiento from sga_adm_establecimiento sae2 where sae2.eta_id_pk = het.pk_direccionamiento
+		)row)
+	END) AS datos_direccionamiento,
+	
+	--Datos de Signos Vitales
+	(SELECT row_to_json(row) FROM (
+		select * from his_signos_vitales_matriz sv where sv.pk_sigvita = het.pk_signos_vitales
+	)row) as datos_signos_vitales,
+	
+	--Datos de Usuario
+	(SELECT row_to_json(row) FROM (
+		select pro.pro_codigomsp,per1.per_numeroidentificacion cedula_usuario,concat(per1.per_nombres,' ',per1.per_apellidopaterno,' ', per1.per_apellidomaterno)  nombre_usuario from sgu_usu_usuario suu inner join sga_adm_profesional pro 
+			inner join sga_adm_persona per1 on pro.per_id_fk = per1.per_id_pk
+			on suu.pro_id_fk = pro.pro_id_pk 
+		where suu.usu_id_pk= het.pk_usuario
+	)row) as datos_usuario
+	
+	
+	from his_emergencia_triaje het where het.pk_triaje =1
+)r)
+
+
+
+--consulta para retornar un registro en json
+(SELECT json_agg(r) from (
+	select 	
+	--Datos de tabla triaje
+	het.pk_triaje,
+	het.pk_persona,
+	sap.per_numeroidentificacion,
+	concat(sap.per_apellidopaterno,' ',sap.per_apellidomaterno) as apellidos,
+	sap.per_nombres as nombres,
+	het.pk_establecimiento,
+	sae.eta_descripcion as establecimiento,
+	het.pk_especialidad,
+	espe.esp_descripcion as especialidad,
+	(CASE WHEN ( het.pk_direccionamiento isnull ) THEN 'NINGUNO' else  dir.eta_descripcion end) as direccionamiento,
+	het.pk_signos_vitales,
+	het.pk_usuario,
+	het.fecha,
+	het.hora,
+	het.motivo_atencion,
+	het.tiempo_atencion,
+	het.audit_creacion,
+	het.audit_modificacion
+
+	from his_emergencia_triaje het 
+	inner join sga_adm_persona sap on het.pk_persona = sap.per_id_pk 
+	inner join sga_adm_establecimiento sae on het.pk_establecimiento = sae.eta_id_pk  
+	inner join sga_adm_especialidad espe on het.pk_especialidad = espe.esp_id_pk 
+	left join sga_adm_establecimiento dir on het.pk_direccionamiento = dir.eta_id_pk
+	
+	)r);
+	
